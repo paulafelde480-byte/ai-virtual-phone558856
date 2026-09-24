@@ -53,6 +53,7 @@ const FISH_LANGUAGE_OPTIONS = [
     { value: "id", label: "印尼语", preview: "Indonesian" },
 ];
 
+
 const FISH_MODELS = [
     { id: "s2.1-pro", name: "s2.1-pro（推荐，最新）" },
     { id: "s2-pro", name: "s2-pro" },
@@ -998,6 +999,26 @@ export function VoiceSettings() {
                                                         <span>-12</span><span>0 默认</span><span>+12</span>
                                                     </div>
                                                     <span className="menu-desc ml-1">单位是半音。Fish 官方没有音调参数，这里是在手机上对合成好的声音变调，语速保持不变；幅度越大越不自然，建议在 ±4 以内微调。调了音调的语音会存成 WAV，占用空间约为原来的 2 倍。</span>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center justify-between px-1">
+                                                        <label className="menu-desc">情绪表现力</label>
+                                                        <span className="menu-label font-medium">{Math.round(((config.fishExpressiveness ?? 0.8) - 0.3) / 0.7 * 100)}%</span>
+                                                    </div>
+                                                    <input
+                                                        type="range"
+                                                        min={0.3}
+                                                        max={1}
+                                                        step={0.05}
+                                                        value={config.fishExpressiveness ?? 0.8}
+                                                        onChange={(e) => updateConfig(config.id, { fishExpressiveness: Number(e.target.value) })}
+                                                        className="w-full accent-black"
+                                                        aria-label="Fish Audio 情绪表现力"
+                                                    />
+                                                    <div className="flex justify-between px-1 menu-desc">
+                                                        <span>平稳</span><span>默认</span><span>起伏大</span>
+                                                    </div>
+                                                    <span className="menu-desc ml-1">越往右，情绪起伏、语气变化越大，越有感情（偶尔会不稳定）；越往左越平稳。觉得声音平淡就往右拉，读错字或怪声多就往左拉。</span>
                                                 </div>
                                                 <span className="menu-desc ml-1">
                                                     API Key 在 fish.audio 登录后「开发者 → API Keys」创建。音色：在 fish.audio 打开喜欢的音色页面，复制浏览器地址栏的链接粘贴到下面即可（会自动识别出 Voice ID）；也可以同步你自己克隆的音色，或按名字搜索音色库。
