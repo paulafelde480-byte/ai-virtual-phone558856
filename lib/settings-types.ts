@@ -167,6 +167,8 @@ export type VoiceApiConfig = {
     sttModel?: string;
     defaultVoice: string;
     languageBoost?: string;
+    /** Fish Audio 朗读语种（ISO 代码如 zh/en/ja）。Fish 会跟随文字本身的语言朗读，这里用于试听文本和按语种筛选音色库。 */
+    fishLanguage?: string;
     /** Minimax voice_setting.speed. Missing values keep the legacy 1.0x behavior. */
     speechSpeed?: number;
     /** Minimax voice_setting.pitch（半音，±12）。缺省保持旧行为（0，原声）。 */
@@ -222,6 +224,7 @@ export type NovelAiPreset = {
 
 export type NovelAiSettings = {
     apiKey: string;
+    requestMode?: ImageGenerationRequestMode;
     activePresetId: string;
     presets: NovelAiPreset[];
 };
@@ -242,8 +245,20 @@ export type ImageGenerationSettings = {
     // NovelAI 模式配置
     novelai?: NovelAiSettings;
     characterReferences: Record<string, {
-        assetId: string;
+        assetId?: string;
         updatedAt: number;
+        /** 角色固定外观特征，会追加到该角色的每次生图提示词。 */
+        featurePrompt?: string;
+        /** 暂时关闭参考图但保留图片与选脸区域，默认开启。 */
+        enabled?: boolean;
+        /** 开启时，仅自拍语义的图片使用参考图，默认开启。 */
+        selfieOnly?: boolean;
+        /** 归一化的正方形脸部选区。 */
+        faceCrop?: {
+            x: number;
+            y: number;
+            size: number;
+        };
     }>;
     imageHosting: ImageHostingSettings;
 };
@@ -288,6 +303,8 @@ export const CONTENT_APP_LABELS: Record<ContentAppId, string> = {
 // Binding slot — config selections for a given scope
 export type BindingSlot = {
     apiConfigId?: string;
+    /** 生图方案 ID，格式为 openai:<presetId> 或 novelai:<presetId>。 */
+    imageConfigId?: string;
     voiceConfigId?: string;
     presetId?: string;
     userIdentityId?: string;

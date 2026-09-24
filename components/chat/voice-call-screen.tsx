@@ -1,5 +1,6 @@
 "use client";
 
+import { stripTtsMarkup } from "@/lib/tts-markup";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChatSession, ChatMessage, loadChatMessages, pushChatMessage, getLatestCharacterStateValues } from "@/lib/chat-storage";
 import { getStatusRegionConfig, isCustomStatusRegionActive } from "@/lib/chat-status-region";
@@ -22,6 +23,7 @@ import { CallSttWarningDialog, hideCallSttWarningPermanently, isCallSttWarningHi
 import { isAndroidBrowser, isIOSDevice } from "./voice-input-platform";
 import { CallVolumeControl } from "./call-volume-control";
 import { startIncomingCallVibration } from "@/lib/call-vibration";
+import { useCallScreenSounds } from "@/lib/chat-sound";
 
 // ── Types ───────────────────────────────────────────
 
@@ -115,6 +117,8 @@ export function VoiceCallScreen({ session, character, onEnd, onConnect, initiato
     }, [minimized]);
 
     // 来电等待接听：循环振动（开关在聊天主页，iOS 网页不支持自动无效果）
+    // + 来电/致电铃声与挂断音（角色专属提示音优先，其余在"全局聊天信息 → 提示音"）
+    useCallScreenSounds({ initiator, callState, session });
     useEffect(() => {
         if (initiator !== "character" || callState !== "CONNECTING") return;
         const stop = startIncomingCallVibration();
@@ -372,8 +376,9 @@ export function VoiceCallScreen({ session, character, onEnd, onConnect, initiato
 
             // 4. Process response
             const { cleanParts } = processAIResponse(aiResponseText);
-            const displayText = cleanParts.join("\n");
+            let displayText = cleanParts.join("\n");
             const speechText = stripBilingualForSpeech(displayText);
+            displayText = stripTtsMarkup(displayText); // 字幕里不显示〔语气〕标记，合成时保留
 
             if (!displayText) {
                 setCallState("IDLE");
